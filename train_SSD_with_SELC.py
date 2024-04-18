@@ -370,7 +370,7 @@ print('\n')
 print('========== Test per Disk ==========')
 accuracy, macro_f1, weighted_f1, FDR, FAR = per_disk_test(model, test_scaled)
 
-end_time = datetime.now()
+end_time = dt.now()
 print(f"End time: {end_time.strftime('%Y/%m/%d %H:%M:%S')}")
 
 # save corrected labels
