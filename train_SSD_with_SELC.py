@@ -17,7 +17,7 @@ import time
 
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR Training')
-parser.add_argument('--batch_size', default=128, type=int, help='train batchsize')
+parser.add_argument('--batch_size', default=256, type=int, help='train batchsize')
 parser.add_argument('--lr', '--learning_rate', default=0.001, type=float, help='initial learning rate')
 parser.add_argument('--noise_mode', default='sym', help='sym or asym')
 parser.add_argument('--model', default='TCN', type=str)
@@ -48,7 +48,7 @@ args = parser.parse_args()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 if args.seed:
-    torch.backends.cudnn.deterministic = False  # fix the GPU to deterministic mode
+    torch.backends.cudnn.deterministic = True  # fix the GPU to deterministic mode
     torch.manual_seed(args.seed)  # CPU seed
     if device == "cuda":
         torch.cuda.manual_seed_all(args.seed)  # GPU seed
@@ -280,7 +280,7 @@ def per_disk_test(model, test_scaled, window_size=90):
     macro_f1 = f1_score(labels, predictions, average='macro')
     weighted_f1 = f1_score(labels, predictions, average='weighted')
     FDR = recall_score(labels, predictions) * 100
-    FAR = (1 - precision_score(labels, predictions)) * 100
+    FAR = (1 - recall_score(labels, predictions,pos_label=0)) * 100
     print(classification_report(labels, predictions, target_names=['healthy', 'failed'], digits=4))
     print('\n')
     print(confusion_matrix(labels, predictions))
@@ -369,9 +369,6 @@ for epoch in range(1, args.num_epochs + 1):
 print('\n')
 print('========== Test per Disk ==========')
 accuracy, macro_f1, weighted_f1, FDR, FAR = per_disk_test(model, test_scaled)
-
-end_time = dt.now()
-print(f"End time: {end_time.strftime('%Y/%m/%d %H:%M:%S')}")
 
 # save corrected labels
 _, corrected_labels = torch.max(criterion.soft_labels, dim=1)
